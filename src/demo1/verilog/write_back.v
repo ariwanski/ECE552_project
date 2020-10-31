@@ -6,4 +6,6 @@ module write_back(ALU_out, mem_out, mem_to_reg, w_data);
 
     output    [15:0] w_data;
 
+    assign w_data = mem_to_reg ? mem_out : ALU_out;
+
 endmodule
