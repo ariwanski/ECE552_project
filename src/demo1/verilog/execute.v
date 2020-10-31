@@ -83,4 +83,7 @@ module execute(ext_out, seq_PC, data_1, data_2, choose_branch, immed, update_R7,
             .ALU_out(ALU_out),
             .Ofl(Ofl));
 
+    // pass through data_2
+    assign data_2_out = data_2;
+
 endmodule
