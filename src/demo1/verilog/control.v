@@ -5,7 +5,7 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
     output           en_PC;
     output     [1:0] w_reg_cont;
     output           ext_type;
-    output           len_immed;
+    output     [1:0] len_immed;
     output           reg_w_en;
     output           choose_branch; 
     output           immed;
@@ -36,7 +36,7 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
         reg_w_en = 1'b1;
         w_reg_cont = 2'b00;
         ext_type = 1'b0;
-        len_immed = 1'b0;
+        len_immed = 2'b-0;
         choose_branch = 1'b0;
         immed = 1'b0;
         update_R7 = 1'b0;

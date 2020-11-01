@@ -1,4 +1,4 @@
-module alu (A, B, Cin, Op, invA, invB, sign, Out, Ofl, Z);
+module alu_internal (A, B, Cin, Op, invA, invB, sign, Out, Ofl, Z, Cout, neg);
    
    input [15:0] A;
    input [15:0] B;
@@ -10,6 +10,8 @@ module alu (A, B, Cin, Op, invA, invB, sign, Out, Ofl, Z);
    output [15:0] Out;
    output Ofl;
    output Z;
+   output Cout; // carry out from addition
+   output neg;
 
    wire [15:0] out_A, out_B; // versions of A and B to be used in datapath
    wire [15:0] out_bs; // output of barrel shifter
@@ -18,7 +20,6 @@ module alu (A, B, Cin, Op, invA, invB, sign, Out, Ofl, Z);
    wire [15:0] out_xor; // output of logical xor operation
    wire [15:0] out_and; // output of logical and operation
    wire [15:0] out_logadd; // output of logical and add 4:1 mux
-   wire Cout; // carry out from addition
    wire overflow_det; // overflow detection signal
 
    // simplifies the code for the logic and add 4:1 mux
@@ -57,6 +58,9 @@ module alu (A, B, Cin, Op, invA, invB, sign, Out, Ofl, Z);
    
    // create the zero output signal -- high when Out is zero
    assign Z = (Out == 16'h0000) ? 1'b1 : 1'b0; 
+
+   // create neg output signal -- high when output is negative
+   assign neg = ((Out[15] == 1'b1) && sign == 1'b1) ? (1'b1) : (1'b0);
 
    assign overflow_det = sign ? ((out_add[15] & ~out_A[15] & ~out_B[15]) | (~out_add[15] & out_A[15] & out_B[15])) : (Cout);
    assign Ofl = overflow_det & (Op == 3'b100);

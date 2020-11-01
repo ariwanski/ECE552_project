@@ -21,6 +21,14 @@ module alu(A, B, Cin, Op, invA, invB, sign, ex_BTR, ex_SLBI, comp_cont, comp, pa
     wire             Cout; // output of internal ALU has a carry out
     wire      [15:0] comp_out;
 
+    wire      [15:0] input_B;
+    wire      [15:0] input_A;
+    wire      [15:0] internal_alu_out;
+    wire       [2:0] internal_alu_op;
+
+    wire      [15:0] SLBI_out;
+    wire      [15:0] BTR_out;
+
     // localparams for comp_cont values
     localparam CC_ZERO = 2'b00;
     localparam CC_NEG = 2'b01;
@@ -31,6 +39,26 @@ module alu(A, B, Cin, Op, invA, invB, sign, ex_BTR, ex_SLBI, comp_cont, comp, pa
     localparam ONE_16 = 16'h0001;
     localparam ZERO_16 = 16'h0000;
 
+    // 2-to-1 mux on B input of internal ALU
+    assign input_B = (ex_SLBI) ? (16'h0008) : (B);
+    
+    // 2-to-1 mux on Op input of internal ALU
+    assign internal_alu_op = (ex_SLBI) ? (3'b001) : (Op);
+
+    // instantiate internal alu 
+    alu_internal alu(.A(A),
+                     .B(input_B),
+                     .Cin(Cin),
+                     .Op(internal_alu_op),
+                     .invA(invA),
+                     .invB(invB),
+                     .sign(sign),
+                     .Out(internal_alu_out),
+                     .Ofl(Ofl),
+                     .Z(zero),
+                     .Cout(Cout),
+                     .neg(negative));
+
     // 4-to-1 mux for comp_out signal
     assign comp_out = ((comp_cont == CC_ZERO) && zero) ? (ONE_16) : (
                       ((comp_cont == CC_NEG) && negative) ? (ONE_16) : (
@@ -38,8 +66,30 @@ module alu(A, B, Cin, Op, invA, invB, sign, ex_BTR, ex_SLBI, comp_cont, comp, pa
                       ((comp_cont == CC_COUT) && Cout) ? (ONE_16) : (ZERO_16))));
 
     // datapath for executing SLBI
-    
+    assign SLBI_out = internal_alu_out | B;
 
     // datapath for executing BTR
+    assign BTR_out[0] = A[15];
+    assign BTR_out[1] = A[14];
+    assign BTR_out[2] = A[13];
+    assign BTR_out[3] = A[12];
+    assign BTR_out[4] = A[11];
+    assign BTR_out[5] = A[10];
+    assign BTR_out[6] = A[9];
+    assign BTR_out[7] = A[8];
+    assign BTR_out[8] = A[7];
+    assign BTR_out[9] = A[6];
+    assign BTR_out[10] = A[5];
+    assign BTR_out[11] = A[4];
+    assign BTR_out[12] = A[3];
+    assign BTR_out[13] = A[2];
+    assign BTR_out[14] = A[1];
+    assign BTR_out[15] = A[0];
+
+    // 5-to-1 mux of final output
+    assign ALU_out = (ex_BTR) ? (BTR_out) : (
+                     (ex_SLBI) ? (SLBI_out) : (
+                     (comp) ? (comp_out) : (
+                     (pass) ? (B) : (internal_alu_out)))); // default -- take output from internal alu
 
 endmodule
