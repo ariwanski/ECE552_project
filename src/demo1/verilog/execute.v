@@ -46,7 +46,7 @@ module execute(ext_out, seq_PC, data_1, data_2, choose_branch, immed, update_R7,
     cla_16 adder(.A(ext_out),
                  .B(branch_add),
                  .S(branch_PC), 
-                 .Cin(),
+                 .Cin(1'b0),
                  .Cout());
 
     // instantiate branch logic
