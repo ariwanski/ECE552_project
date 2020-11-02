@@ -1,4 +1,4 @@
-module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose_branch, immed, update_R7, subtract, ALU_op, invA, invB, sign, ex_BTR, ex_SLBI, comp_cont, comp, pass, branch_cont, branch_J, createdump, write_mem, read_mem, mem_to_reg);
+module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose_branch, immed, update_R7, subtract, ALU_op, invA, invB, sign, ex_BTR, ex_SLBI, comp_cont, comp, pass, branch_cont, branch_J, branch_I, createdump, write_mem, read_mem, mem_to_reg);
 
     input     [15:0] instruc;
 
@@ -22,6 +22,7 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
     output reg           pass;
     output reg     [1:0] branch_cont;
     output reg           branch_J;
+    output reg           branch_I;
     output reg           createdump;
     output reg           write_mem;
     output reg           read_mem;
@@ -51,10 +52,12 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
         comp = 1'b0;
         branch_cont = 2'b00;
         branch_J = 1'b0;
+        branch_I = 1'b0;
         createdump = 1'b0;
         write_mem = 1'b0;
         read_mem = 1'b0;
         mem_to_reg = 1'b0;
+        pass = 1'b0;
 
         casex(op_code)
             5'b0000:begin
@@ -195,31 +198,36 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
                 ext_type = 1'b1;
                 len_immed = 2'b01;
                 branch_cont = 2'b00;
+                branch_I = 1'b1;
             end
             5'b01101:begin
                 reg_w_en = 1'b0;
                 ext_type = 1'b1;
                 len_immed = 2'b01;
                 branch_cont = 2'b01;
+                branch_I = 1'b1;
             end
             5'b01110:begin
                 reg_w_en = 1'b0;
                 ext_type = 1'b1;
                 len_immed = 2'b01;
                 branch_cont = 2'b10;
+                branch_I = 1'b1;
             end
             5'b01111:begin
                 reg_w_en = 1'b0;
                 ext_type = 1'b1;
                 len_immed = 2'b01;
                 branch_cont = 2'b11;
+                branch_I = 1'b1;
             end
-            5'b11000:begin
+            5'b11000:begin // LBI instruction
                 w_reg_cont = 2'b10;
                 ext_type = 1'b1;
                 immed = 1'b1;
                 len_immed = 2'b01;
                 pass = 1'b1;
+                en_PC = 1'b1;
             end
             5'b10010:begin
                 w_reg_cont = 2'b10;

@@ -148,7 +148,7 @@ module proc_hier_bench();
    assign MemData = DUT.p0.memory.data_2;
    // Data to be written to memory for memory writes (16 bits)
    
-   //assign Halt = DUT.p0.memory0.halt;
+   assign Halt = DUT.p0.control.createdump;
    // Is processor halted (1 bit signal)
    
    /* Add anything else you want here */

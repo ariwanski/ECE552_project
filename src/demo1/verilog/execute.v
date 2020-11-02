@@ -1,4 +1,4 @@
-module execute(ext_out, seq_PC, data_1, data_2, choose_branch, immed, update_R7, subtract, ALU_op, invA, invB, sign, ex_BTR, ex_SLBI, comp_cont, comp, pass, branch_cont, branch_J, data_2_out, ALU_out, branch, branch_PC);
+module execute(ext_out, seq_PC, data_1, data_2, choose_branch, immed, update_R7, subtract, ALU_op, invA, invB, sign, ex_BTR, ex_SLBI, comp_cont, comp, pass, branch_cont, branch_J, branch_I, data_2_out, ALU_out, branch, branch_PC);
 
     input     [15:0] ext_out;
     input     [15:0] seq_PC;
@@ -19,13 +19,14 @@ module execute(ext_out, seq_PC, data_1, data_2, choose_branch, immed, update_R7,
     input            pass;
     input      [1:0] branch_cont;
     input            branch_J;
+    input            branch_I;
 
     output    [15:0] data_2_out;
     output    [15:0] ALU_out;
     output           branch;
     output    [15:0] branch_PC;
 
-    wire             branch_I;
+    wire             branch_I_out;
     wire      [15:0] branch_add;
 
     wire      [15:0] data_B;
@@ -56,12 +57,12 @@ module execute(ext_out, seq_PC, data_1, data_2, choose_branch, immed, update_R7,
                             .Rs_gte_zero(rs_gte_zero));
 
     // 4-to-1 mux on outputs of branch i logic
-    assign branch_I = (branch_cont == 2'b00) ? (rs_zero) : (
+    assign branch_I_out = (branch_cont == 2'b00) ? (rs_zero) : (
                       (branch_cont == 2'b01) ? (rs_n_zero) : (
                       (branch_cont == 2'b10) ? (rs_lt_zero) : (
                        rs_gte_zero))); // branch_cont == 2'b11
     
-    assign branch = branch_I || branch_J;
+    assign branch = (branch_I && branch_I_out) || branch_J;
 
     // create two levels of 2-to-1 muxes for data_B
     assign other_B = (immed == 1'b1) ? (ext_out) : (data_2);

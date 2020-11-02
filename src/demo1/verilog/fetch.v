@@ -38,7 +38,7 @@ module fetch(en_PC, branch, branch_PC, instruc, seq_PC, clk, rst);
     cla_16 adder(.A(PC_out),
                  .B(16'h0002),
                  .S(seq_PC), 
-                 .Cin(),
+                 .Cin(1'b0),
                  .Cout());
 
 endmodule

@@ -47,6 +47,7 @@ module proc (/*AUTOARG*/
    wire             pass;
    wire       [1:0] branch_cont;
    wire             branch_J;
+   wire             branch_I;
    wire             createdump;
    wire             write_mem;
    wire             read_mem;
@@ -96,6 +97,7 @@ module proc (/*AUTOARG*/
                    .pass(pass),
                    .branch_cont(branch_cont),
                    .branch_J(branch_J),
+                   .branch_I(branch_I),
                    .createdump(createdump),
                    .write_mem(write_mem),
                    .read_mem(read_mem),
@@ -146,6 +148,7 @@ module proc (/*AUTOARG*/
                    .pass(pass),
                    .branch_cont(branch_cont),
                    .branch_J(branch_J),
+                   .branch_I(branch_I),
                    .data_2_out(data_2_2),
                    .ALU_out(ALU_out_1),
                    .branch(branch),
