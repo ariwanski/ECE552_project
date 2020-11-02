@@ -28,8 +28,10 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
     output reg           read_mem;
     output reg           mem_to_reg;
 
-    wire op_code = instruc[15:11]; // get the op_code from instruc
-    wire func_code = instruc[1:0]; // get the func_code from instruc -- used for a few instructions
+    reg halt=1'b0;
+
+    wire [4:0]op_code = instruc[15:11]; // get the op_code from instruc
+    wire [1:0]func_code = instruc[1:0]; // get the func_code from instruc -- used for a few instructions
 
     always@(*)begin
         // assign default outputs
@@ -59,11 +61,12 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
         mem_to_reg = 1'b0;
         pass = 1'b0;
 
-        casex(op_code)
-            5'b0000:begin
+        case(op_code)
+            5'b00000:begin
                 en_PC = 1'b0;
                 createdump = 1'b1;
                 reg_w_en = 1'b0;
+                halt= 1'b1;
             end
             5'b00001:begin
                 reg_w_en = 1'b0;
