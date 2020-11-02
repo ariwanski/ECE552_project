@@ -29,11 +29,15 @@ module alu(A, B, Cin, Op, invA, invB, sign, ex_BTR, ex_SLBI, comp_cont, comp, pa
     wire      [15:0] SLBI_out;
     wire      [15:0] BTR_out;
 
+    wire             seq_cond; // condition that must be met for seq
+    wire             slt_cond; // condition that must be met for slt
+    wire             sle_cond; // condition that must be met for sle
+
     // localparams for comp_cont values
-    localparam CC_ZERO = 2'b00;
-    localparam CC_NEG = 2'b01;
-    localparam CC_NEG_ZERO = 2'b10;
-    localparam CC_COUT = 2'b11;
+    localparam CC_SEQ = 2'b00;
+    localparam CC_SLT = 2'b01;
+    localparam CC_SLE = 2'b10;
+    localparam CC_SCO = 2'b11;
 
     // 16bit wide output values
     localparam ONE_16 = 16'h0001;
@@ -59,11 +63,17 @@ module alu(A, B, Cin, Op, invA, invB, sign, ex_BTR, ex_SLBI, comp_cont, comp, pa
                      .Cout(Cout),
                      .neg(negative));
 
+    assign seq_cond = zero && ~Ofl;
+    assign slt_cond = (A[15] == B[15]) ? (negative) : ( // same MSB - safe to use subtraction
+                      (A[15] == 1'b1) ? (1'b1) : (1'b0)); // one with MSB = 1 is smaller
+    assign sle_cond = (A[15] == B[15]) ? (negative || zero) : ( // same MSB - safe to use subtraction
+                      (A[15] == 1'b1) ? (1'b1) : (1'b0));
+
     // 4-to-1 mux for comp_out signal
-    assign comp_out = ((comp_cont == CC_ZERO) && zero) ? (ONE_16) : (
-                      ((comp_cont == CC_NEG) && negative) ? (ONE_16) : (
-                      ((comp_cont == CC_NEG_ZERO) && (negative || zero)) ? (ONE_16) : (
-                      ((comp_cont == CC_COUT) && Cout) ? (ONE_16) : (ZERO_16))));
+    assign comp_out = ((comp_cont == CC_SEQ) && seq_cond) ? (ONE_16) : ( // SEQ
+                      ((comp_cont == CC_SLT) && slt_cond) ? (ONE_16) : ( //SLT
+                      ((comp_cont == CC_SLE) && sle_cond) ? (ONE_16) : ( // SLE
+                      ((comp_cont == CC_SCO) && Cout) ? (ONE_16) : (ZERO_16)))); //SCO
 
     // datapath for executing SLBI
     assign SLBI_out = internal_alu_out | B;

@@ -175,7 +175,7 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
             5'b11101:begin
                 w_reg_cont = 2'b01;
                 ALU_op = 3'b100;
-                subtract = 1;
+                subtract = 1'b1;
                 invB = 1'b1;
                 sign = 1'b1;
                 comp = 1'b1;
