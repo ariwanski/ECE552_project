@@ -1,4 +1,4 @@
-module execute(ext_out, seq_PC, data_1, data_2, choose_branch, immed, update_R7, subtract, ALU_op[2:0], invA, invB, sign, ex_BTR, ex_SLBI, comp_cont, comp, pass, branch_cont, branch_J, data_2_out, ALU_out, branch, branch_PC);
+module execute(ext_out, seq_PC, data_1, data_2, choose_branch, immed, update_R7, subtract, ALU_op, invA, invB, sign, ex_BTR, ex_SLBI, comp_cont, comp, pass, branch_cont, branch_J, data_2_out, ALU_out, branch, branch_PC);
 
     input     [15:0] ext_out;
     input     [15:0] seq_PC;
@@ -49,11 +49,11 @@ module execute(ext_out, seq_PC, data_1, data_2, choose_branch, immed, update_R7,
                  .Cout());
 
     // instantiate branch logic
-    branch_i_logic branch(.Rs(data_1), 
-                          .Rs_zero(rs_zero),
-                          .Rs_n_zero(rs_n_zero),
-                          .Rs_lt_zero(rs_lt_zero),
-                          .Rs_gte_zero(rs_gte_zero));
+    branch_i_logic branch_i(.Rs(data_1), 
+                            .Rs_zero(rs_zero),
+                            .Rs_n_zero(rs_n_zero),
+                            .Rs_lt_zero(rs_lt_zero),
+                            .Rs_gte_zero(rs_gte_zero));
 
     // 4-to-1 mux on outputs of branch i logic
     assign branch_I = (branch_cont == 2'b00) ? (rs_zero) : (

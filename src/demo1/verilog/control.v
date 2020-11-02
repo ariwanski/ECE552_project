@@ -2,30 +2,30 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
 
     input     [15:0] instruc;
 
-    output           en_PC;
-    output     [1:0] w_reg_cont;
-    output           ext_type;
-    output     [1:0] len_immed;
-    output           reg_w_en;
-    output           choose_branch; 
-    output           immed;
-    output           update_R7;
-    output           subtract;
-    output     [2:0] ALU_op;
-    output           invA;
-    output           invB;
-    output           sign;
-    output           ex_BTR;
-    output           ex_SLBI;
-    output     [1:0] comp_cont;
-    output           comp;
-    output           pass;
-    output     [1:0] branch_cont;
-    output           branch_J;
-    output           createdump;
-    output           write_mem;
-    output           read_mem;
-    output           mem_to_reg;
+    output reg           en_PC;
+    output reg     [1:0] w_reg_cont;
+    output reg           ext_type;
+    output reg     [1:0] len_immed;
+    output reg           reg_w_en;
+    output reg           choose_branch; 
+    output reg           immed;
+    output reg           update_R7;
+    output reg           subtract;
+    output reg     [2:0] ALU_op;
+    output reg           invA;
+    output reg           invB;
+    output reg           sign;
+    output reg           ex_BTR;
+    output reg           ex_SLBI;
+    output reg     [1:0] comp_cont;
+    output reg           comp;
+    output reg           pass;
+    output reg     [1:0] branch_cont;
+    output reg           branch_J;
+    output reg           createdump;
+    output reg           write_mem;
+    output reg           read_mem;
+    output reg           mem_to_reg;
 
     wire op_code = instruc[15:11]; // get the op_code from instruc
     wire func_code = instruc[1:0]; // get the func_code from instruc -- used for a few instructions
@@ -36,7 +36,7 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
         reg_w_en = 1'b1;
         w_reg_cont = 2'b00;
         ext_type = 1'b0;
-        len_immed = 2'b-0;
+        len_immed = 2'b00;
         choose_branch = 1'b0;
         immed = 1'b0;
         update_R7 = 1'b0;
@@ -75,7 +75,7 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
                 ext_type = 1'b1;
                 immed = 1'b1;
                 subtract = 1'b1;
-                ALU_op = 1'b100;
+                ALU_op = 3'b100;
                 invA = 1'b1;
                 sign = 1'b1;
             end
@@ -85,7 +85,7 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
             end
             5'b01011:begin
                 immed = 1'b1;
-                ALU_op = 1'b111;
+                ALU_op = 3'b111;
                 invB = 1'b1;
             end
             5'b10100:begin

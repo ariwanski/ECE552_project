@@ -32,7 +32,7 @@ module shifter (In, Cnt, Op, Out);
    // Layer 4 of Multiplexers
    assign mod_layer_4 = Op == ROT_LEFT ? ({res_layer_2[11:0],res_layer_2[15:12]}) :
                      (Op == SHFT_LEFT ? ({res_layer_2[11:0], 4'b0000}) :
-                     (Op == ROT_RIGHT ? (res_layer_2[3:0],res_layer_2[15:4]}) : 
+                     (Op == ROT_RIGHT ? ({res_layer_2[3:0],res_layer_2[15:4]}) : 
                      ({4'b0000,res_layer_2[15:4]}))); // Op == SHFT_RIGHT_LOG 
 
    assign res_layer_4 = Cnt[2] ? mod_layer_4 : res_layer_2;
@@ -40,7 +40,7 @@ module shifter (In, Cnt, Op, Out);
    // Layer 8 of Multiplexers
    assign mod_layer_8 = Op == ROT_LEFT ? ({res_layer_4[7:0],res_layer_4[15:8]}) :
                      (Op == SHFT_LEFT ? ({res_layer_4[7:0], 8'b00000000}) :
-                     (Op == ROT_RIGHT ? (res_layer_4[7:0],res_layer_4[15:8]}) : 
+                     (Op == ROT_RIGHT ? ({res_layer_4[7:0],res_layer_4[15:8]}) : 
                      ({8'b00000000,res_layer_4[15:8]}))); // Op == SHFT_RIGHT_LOG 
 
    assign res_layer_8 = Cnt[3] ? mod_layer_8 : res_layer_4;

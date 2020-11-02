@@ -30,7 +30,7 @@ module proc (/*AUTOARG*/
    wire             en_PC;
    wire       [1:0] w_reg_cont;
    wire             ext_type;
-   wire             len_immed;
+   wire       [1:0] len_immed;
    wire             reg_w_en;
    wire             choose_branch; 
    wire             immed;

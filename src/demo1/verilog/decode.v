@@ -7,6 +7,8 @@ module decode(w_data, instruc, seq_PC, w_reg_cont, ext_type, len_immed, reg_w_en
     input            ext_type;
     input      [1:0] len_immed;
     input            reg_w_en;
+    input            clk;
+    input            rst;
 
     output    [15:0] seq_PC_out;
     output    [15:0] ext_out;

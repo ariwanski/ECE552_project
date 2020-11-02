@@ -3,6 +3,8 @@ module fetch(en_PC, branch, branch_PC, instruc, seq_PC, clk, rst);
     input            en_PC;
     input            branch;
     input     [15:0] branch_PC;
+    input            clk;
+    input            rst;
 
     output    [15:0] instruc;
     output    [15:0] seq_PC;
