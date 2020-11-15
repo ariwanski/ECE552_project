@@ -1,10 +1,10 @@
 module ID_EX_split(clk, rst, en, choose_branch_is, immed_is, update_R7_is, subtract_is, ALU_op_is, invA_is,
                    invB_is, sign_is, ex_BTR_is, ex_SLBI_is, comp_cont_is, comp_is, pass_is, branch_cont_is, 
                    branch_J_is, branch_I_is, createdump_is, write_mem_is, read_mem_is, mem_to_reg_is, reg_w_en_is,
-                   ext_out_is, seq_PC_is, data_1_is, data_2_is, choose_branch_os, immed_os, update_R7_os,
+                   w_reg_is, ext_out_is, seq_PC_is, data_1_is, data_2_is, choose_branch_os, immed_os, update_R7_os,
                    subtract_os, ALU_op_os, invA_os, invB_os, sign_os, ex_BTR_os, ex_SLBI_os, comp_cont_os,
                    comp_os, pass_os, branch_cont_os, branch_J_os, branch_I_os, createdump_os, write_mem_os, 
-                   read_mem_os, mem_to_reg_os, reg_w_en_os, ext_out_os, seq_PC_os, data_1_os, data_2_os);
+                   read_mem_os, mem_to_reg_os, reg_w_en_os, w_reg_os, ext_out_os, seq_PC_os, data_1_os, data_2_os);
 
     input            clk;
     input            rst;
@@ -55,12 +55,14 @@ module ID_EX_split(clk, rst, en, choose_branch_is, immed_is, update_R7_is, subtr
     output           read_mem_os;
 
     // ** control signals for write back stage
-    // note: this include the reg_w_en signal that goes back to the execute stage
+    // note: this include the reg_w_en and w_reg signals that goes back to the decode stage
     input            mem_to_reg_is;
     input            reg_w_en_is;
+    input      [2:0] w_reg_is;
 
     output           mem_to_reg_os;
     output           reg_w_en_os;
+    output     [2:0] w_reg_os;
 
     // ** data for execute stage
     input     [15:0] ext_out_is;
@@ -105,4 +107,5 @@ module ID_EX_split(clk, rst, en, choose_branch_is, immed_is, update_R7_is, subtr
     // registers for write back control logic
     register #(1) mem_to_reg_r(.out(mem_to_reg_os), .in(mem_to_reg_is), .wr_en(en), .clk(clk), .rst(rst));
     register #(1) reg_w_en_r(.out(reg_w_en_os), .in(reg_w_en_is), .wr_en(en), .clk(clk), .rst(rst));
+    register #(3) w_reg_r(.out(w_reg_os), .in(w_reg_is), .wr_en(en), .clk(clk), .rst(rst));
 endmodule
