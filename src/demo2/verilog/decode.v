@@ -9,13 +9,13 @@ module decode(w_data, instruc, seq_PC, w_reg_cont, ext_type, len_immed, reg_w_en
     input            reg_w_en;
     input            clk;
     input            rst;
+    input      [2:0] w_reg_use; // use this register address to modify reg file
 
     output    [15:0] seq_PC_out;
     output    [15:0] ext_out;
     output    [15:0] data_1;
     output    [15:0] data_2;
-
-    wire       [2:0] w_reg; // register address to write to
+    output     [2:0] w_reg_pipe; // pipe this register addres for later use
 
     localparam DATA_WIDTH = 16;
 
@@ -32,7 +32,7 @@ module decode(w_data, instruc, seq_PC, w_reg_cont, ext_type, len_immed, reg_w_en
                               .rst(rst), 
                               .read1regsel(instruc[10:8]),
                               .read2regsel(instruc[7:5]), 
-                              .writeregsel(w_reg), 
+                              .writeregsel(w_reg_use), 
                               .writedata(w_data), 
                               .write(reg_w_en), 
                               .read1data(data_1), 
@@ -40,10 +40,10 @@ module decode(w_data, instruc, seq_PC, w_reg_cont, ext_type, len_immed, reg_w_en
                               .err());
 
     // 4-to-1 mux on Write Register
-    assign w_reg = (w_reg_cont == 2'b00) ? (instruc[7:5]) : (
-                   (w_reg_cont == 2'b01) ? (instruc[4:2]) : (
-                   (w_reg_cont == 2'b10) ? (instruc[10:8]) :(
-                    3'b111))); // w_reg_cont == 2'b11
+    assign w_reg_pipe = (w_reg_cont == 2'b00) ? (instruc[7:5]) : (
+                        (w_reg_cont == 2'b01) ? (instruc[4:2]) : (
+                        (w_reg_cont == 2'b10) ? (instruc[10:8]) :(
+                         3'b111))); // w_reg_cont == 2'b11
 
     // pass through seq_PC
     assign seq_PC_out = seq_PC;
