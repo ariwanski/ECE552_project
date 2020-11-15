@@ -122,7 +122,7 @@ module proc (/*AUTOARG*/
    wire      [15:0] ext_out_de_is;
    wire      [15:0] ext_out_de_os;
    wire      [15:0] data_1_de_is;
-   wire      [15:0] data_1_de_os
+   wire      [15:0] data_1_de_os;
    wire      [15:0] data_2_1_de_is; // data_2 from decode to execute
    wire      [15:0] data_2_1_de_os; // data_2 from decode to execute
 
@@ -257,7 +257,7 @@ module proc (/*AUTOARG*/
                            .ex_BTR_os(ex_BTR_de_os),
                            .ex_SLBI_os(ex_SLBI_de_os),
                            .comp_cont_os(comp_cont_de_os),
-                           .comp_os(comp_cont_de_os),
+                           .comp_os(comp_de_os),
                            .pass_os(pass_de_os),
                            .branch_cont_os(branch_cont_de_os),
                            .branch_J_os(branch_J_de_os),

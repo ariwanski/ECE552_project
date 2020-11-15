@@ -1,4 +1,4 @@
-module decode(w_data, instruc, seq_PC, w_reg_cont, ext_type, len_immed, reg_w_en, seq_PC_out, ext_out, data_1, data_2, clk, rst);
+module decode(w_data, instruc, seq_PC, w_reg_cont, ext_type, len_immed, reg_w_en, w_reg_use, seq_PC_out, ext_out, data_1, data_2, clk, rst, w_reg_pipe);
 
     input     [15:0] w_data;
     input     [15:0] instruc;
