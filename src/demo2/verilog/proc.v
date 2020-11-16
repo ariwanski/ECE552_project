@@ -144,7 +144,9 @@ module proc (/*AUTOARG*/
    wire             en_MEM_WB;
 
    // wires for hazard detection and stalling
-   wire             stall;
+   wire              data_haz_s1;
+   wire              data_haz_s2;
+   wire              branch_haz;
 
    // assign the pipeline register enable signals to 1 for now
    assign en_IF_ID = 1'b1;
@@ -179,7 +181,9 @@ module proc (/*AUTOARG*/
                                .read_reg_2(instruc_fd_os[7:5]),
                                .branch_I(branch_I_de_is),
                                .branch_J(branch_J_de_is),
-                               .stall(stall));        
+                               .data_haz_s1(data_haz_s1),
+                               .data_haz_s2(data_haz_s2),
+                               .branch_haz(branch_haz));        
 
    // instantiate control 
    control control(.instruc(instruc_fd_os),

@@ -14,6 +14,8 @@ module fetch(en_PC, branch, branch_PC, instruc, seq_PC, clk, rst);
 
     localparam WIDTH = 16;
 
+    wire             late_rst;
+
     // instantiate the instruction memory
     memory2c instr_mem(.data_out(instruc),
                        .data_in(),
@@ -30,7 +32,7 @@ module fetch(en_PC, branch, branch_PC, instruc, seq_PC, clk, rst);
     // instantiate PC register
     register #(WIDTH) PC_reg(.out(PC_out), 
                              .in(PC_in), 
-                             .wr_en(en_PC), 
+                             .wr_en(en_PC || ~late_rst), 
                              .clk(clk), 
                              .rst(rst));
 
@@ -41,4 +43,6 @@ module fetch(en_PC, branch, branch_PC, instruc, seq_PC, clk, rst);
                  .Cin(1'b0),
                  .Cout());
 
+     register #(1) rst_r(.out(late_rst), .in(1'b1), .wr_en(1'b1), .clk(clk), .rst(rst));
+    
 endmodule

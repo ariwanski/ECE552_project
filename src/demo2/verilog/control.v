@@ -269,7 +269,6 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
                 pass = 1'b1;
             end
             5'b00011:begin // NOP
-                en_PC = 1'b0; // disable the PC so don't get new instruction
                 reg_w_en = 1'b0;
             end
         endcase
