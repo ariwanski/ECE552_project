@@ -149,13 +149,15 @@ module proc (/*AUTOARG*/
    wire              branch_haz;
 
    // assign the pipeline register enable signals to 1 for now
-   assign en_IF_ID = 1'b1;
-   assign en_ID_EX = 1'b1;
+   // want this enable signal to go low whenever a hazard is detected
+   assign en_IF_ID = ~(data_haz_s1 || data_haz_s2 || branch_haz);
+   // want this enable signal to go low whenever a data hazard is detected
+   assign en_ID_EX = ~(data_haz_s1 || data_haz_s2);
    assign en_EX_MEM = 1'b1;
    assign en_MEM_WB = 1'b1;
 
    // instantiate fetch
-   fetch fetch(.en_PC(en_PC),
+   fetch fetch(.en_PC(en_PC && ~(data_haz_s1 || data_haz_s2 || branch_haz)),
                .branch(branch),
                .branch_PC(branch_PC),
                .instruc(instruc_fd_is),
@@ -165,7 +167,7 @@ module proc (/*AUTOARG*/
 
    // instantiate the pipeline registers between fetch and decode (control is in decode)
    IF_ID_split IF_ID_split(.clk(clk),
-                           .rst(rst),
+                           .rst(rst || branch_haz),
                            .en(en_IF_ID),
                            .instruc_is(instruc_fd_is),
                            .seq_PC_is(seq_PC_1_fd_is),
@@ -232,7 +234,7 @@ module proc (/*AUTOARG*/
 
    // instantiate the pipeline registers between decode and execute
    ID_EX_split ID_EX_split(.clk(clk),
-                           .rst(rst),
+                           .rst(rst || data_haz_s1 || data_haz_s2), // inject a NOP here when a data hazard occurs
                            .en(en_ID_EX),
                            .choose_branch_is(choose_branch_de_is),
                            .immed_is(immed_de_is),
