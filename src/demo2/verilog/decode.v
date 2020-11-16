@@ -28,7 +28,7 @@ module decode(w_data, instruc, seq_PC, w_reg_cont, ext_type, len_immed, reg_w_en
                     .ext_out(ext_out));
 
     // instantiate register file
-    rf #(DATA_WIDTH) reg_file(.clk(clk), 
+    rf_bypass #(DATA_WIDTH) reg_file(.clk(clk), 
                               .rst(rst), 
                               .read1regsel(instruc[10:8]),
                               .read2regsel(instruc[7:5]), 
