@@ -196,28 +196,28 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
                 comp = 1'b1;
                 comp_cont = 2'b11;
             end
-            5'b01100:begin
+            5'b01100:begin //BEQZ
                 reg_w_en = 1'b0;
                 ext_type = 1'b1;
                 len_immed = 2'b01;
                 branch_cont = 2'b00;
                 branch_I = 1'b1;
             end
-            5'b01101:begin
+            5'b01101:begin //BNEZ
                 reg_w_en = 1'b0;
                 ext_type = 1'b1;
                 len_immed = 2'b01;
                 branch_cont = 2'b01;
                 branch_I = 1'b1;
             end
-            5'b01110:begin
+            5'b01110:begin // BLTZ
                 reg_w_en = 1'b0;
                 ext_type = 1'b1;
                 len_immed = 2'b01;
                 branch_cont = 2'b10;
                 branch_I = 1'b1;
             end
-            5'b01111:begin
+            5'b01111:begin // BGEZ
                 reg_w_en = 1'b0;
                 ext_type = 1'b1;
                 len_immed = 2'b01;
@@ -238,20 +238,20 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
                 len_immed = 2'b01;
                 ex_SLBI = 1'b1;
             end
-            5'b00100:begin
+            5'b00100:begin // J displacement
                 reg_w_en = 1'b0;
                 ext_type = 1'b1;
                 len_immed = 2'b10;
                 branch_J = 1'b1;
             end
-            5'b00101:begin
+            5'b00101:begin // JR
                 reg_w_en = 1'b0;
                 ext_type = 1'b1;
                 len_immed = 2'b01;
                 choose_branch = 1'b1;
                 branch_J = 1'b1;
             end
-            5'b00110:begin
+            5'b00110:begin //JAL
                 ext_type = 1'b1;
                 len_immed = 2'b10;
                 w_reg_cont = 2'b11;
@@ -259,7 +259,7 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
                 update_R7 = 1'b1;
                 pass = 1'b1;
             end
-            5'b00111:begin
+            5'b00111:begin // JALR
                 ext_type = 1'b1;
                 len_immed = 2'b01;
                 w_reg_cont = 2'b11;

@@ -99,15 +99,11 @@ module proc (/*AUTOARG*/
    wire             reg_w_en_de_os;
    wire       [2:0] w_reg_de_os;
 
-
    wire             reg_w_en_em_os;
    wire       [2:0] w_reg_em_os;
 
    wire             reg_w_en_mw_os;
    wire       [2:0] w_reg_mw_os;
-   
-   
-   
 
    // wires needed for fetch
    wire      [15:0] branch_PC;
@@ -147,6 +143,9 @@ module proc (/*AUTOARG*/
    wire             en_EX_MEM;
    wire             en_MEM_WB;
 
+   // wires for hazard detection and stalling
+   wire             stall;
+
    // assign the pipeline register enable signals to 1 for now
    assign en_IF_ID = 1'b1;
    assign en_ID_EX = 1'b1;
@@ -169,7 +168,18 @@ module proc (/*AUTOARG*/
                            .instruc_is(instruc_fd_is),
                            .seq_PC_is(seq_PC_1_fd_is),
                            .instruc_os(instruc_fd_os),
-                           .seq_PC_os(seq_PC_1_fd_os));         
+                           .seq_PC_os(seq_PC_1_fd_os)); 
+
+   // instantiate hazard dectection logic
+   hazard_detect hazard_detect(.w_reg_ex(w_reg_de_os),
+                               .w_reg_mem(w_reg_em_os),
+                               .reg_w_en_ex(reg_w_en_de_os),
+                               .reg_w_en_mem(reg_w_en_em_os),
+                               .read_reg_1(instruc_fd_os[10:8]),
+                               .read_reg_2(instruc_fd_os[7:5]),
+                               .branch_I(branch_I_de_is),
+                               .branch_J(branch_J_de_is),
+                               .stall(stall));        
 
    // instantiate control 
    control control(.instruc(instruc_fd_os),
