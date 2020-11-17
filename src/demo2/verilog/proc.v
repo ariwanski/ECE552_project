@@ -150,7 +150,7 @@ module proc (/*AUTOARG*/
 
    // assign the pipeline register enable signals to 1 for now
    // want this enable signal to go low whenever a hazard is detected
-   assign en_IF_ID = ~(data_haz_s1 || data_haz_s2 || branch_haz);
+   assign en_IF_ID = ~(data_haz_s1 || data_haz_s2);
    // want this enable signal to go low whenever a data hazard is detected
    assign en_ID_EX = ~(data_haz_s1 || data_haz_s2);
    assign en_EX_MEM = 1'b1;
@@ -167,12 +167,14 @@ module proc (/*AUTOARG*/
 
    // instantiate the pipeline registers between fetch and decode (control is in decode)
    IF_ID_split IF_ID_split(.clk(clk),
-                           .rst(rst || branch_haz),
+                           .rst(rst),
                            .en(en_IF_ID),
                            .instruc_is(instruc_fd_is),
                            .seq_PC_is(seq_PC_1_fd_is),
                            .instruc_os(instruc_fd_os),
-                           .seq_PC_os(seq_PC_1_fd_os)); 
+                           .seq_PC_os(seq_PC_1_fd_os),
+                           .branch_haz(branch_haz),
+                           .branch(branch)); 
 
    // instantiate hazard dectection logic
    hazard_detect hazard_detect(.w_reg_ex(w_reg_de_os),
