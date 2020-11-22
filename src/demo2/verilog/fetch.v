@@ -1,4 +1,4 @@
-module fetch(en_PC, branch, branch_PC, instruc, seq_PC, clk, rst);
+module fetch(en_PC, branch, branch_PC, instruc, seq_PC, clk, rst, late_rst);
 
     input            en_PC;
     input            branch;
@@ -14,7 +14,7 @@ module fetch(en_PC, branch, branch_PC, instruc, seq_PC, clk, rst);
 
     localparam WIDTH = 16;
 
-    wire             late_rst;
+    output           late_rst;
 
     // instantiate the instruction memory
     memory2c instr_mem(.data_out(instruc),

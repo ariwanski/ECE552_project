@@ -148,6 +148,9 @@ module proc (/*AUTOARG*/
    wire              data_haz_s2;
    wire              branch_haz;
 
+   // signal needed to avoid halting right away
+   wire              late_rst;
+
    // assign the pipeline register enable signals to 1 for now
    // want this enable signal to go low whenever a hazard is detected
    assign en_IF_ID = ~(data_haz_s1 || data_haz_s2);
@@ -163,7 +166,8 @@ module proc (/*AUTOARG*/
                .instruc(instruc_fd_is),
                .seq_PC(seq_PC_1_fd_is),
                .clk(clk),
-               .rst(rst));
+               .rst(rst),
+               .late_rst(late_rst));
 
    // instantiate the pipeline registers between fetch and decode (control is in decode)
    IF_ID_split IF_ID_split(.clk(clk),
@@ -191,6 +195,7 @@ module proc (/*AUTOARG*/
 
    // instantiate control 
    control control(.instruc(instruc_fd_os),
+                   .late_rst(late_rst),
                    .en_PC(en_PC), // used in fetch
                    .w_reg_cont(w_reg_cont), // used right away in decode
                    .ext_type(ext_type), // used right away in decode

@@ -127,8 +127,8 @@ module proc_hier_pbench();
    // Edit the example below. You must change the signal
    // names on the right hand side
     
-   //assign PC = DUT.PC_Out;
-   //assign Inst = DUT.Instruction_f;
+   assign PC = DUT.p0.fetch.PC_out;
+   assign Inst = DUT.p0.fetch.instruc;
    
    assign RegWrite = DUT.p0.decode.reg_file.write;
    // Is register file being written to, one bit signal (1 means yes, 0 means no)
@@ -171,7 +171,7 @@ module proc_hier_pbench();
    // Signal indicating a valid data cache hit
    // Above assignment is a dummy example
    
-   assign Halt = DUT.p0.memory.createdump && (inst_count > 0);
+   assign Halt = DUT.p0.memory.createdump;
    // Processor halted
    
    

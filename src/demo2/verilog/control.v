@@ -1,6 +1,7 @@
-module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose_branch, immed, update_R7, subtract, ALU_op, invA, invB, sign, ex_BTR, ex_SLBI, comp_cont, comp, pass, branch_cont, branch_J, branch_I, createdump, write_mem, read_mem, mem_to_reg);
+module control(instruc, late_rst, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose_branch, immed, update_R7, subtract, ALU_op, invA, invB, sign, ex_BTR, ex_SLBI, comp_cont, comp, pass, branch_cont, branch_J, branch_I, createdump, write_mem, read_mem, mem_to_reg);
 
     input     [15:0] instruc;
+    input            late_rst;
 
     output reg           en_PC;
     output reg     [1:0] w_reg_cont;
@@ -30,7 +31,7 @@ module control(instruc, en_PC, w_reg_cont, ext_type, len_immed, reg_w_en, choose
 
     reg halt=1'b0;
 
-    wire [4:0]op_code = instruc[15:11]; // get the op_code from instruc
+    wire [4:0]op_code = (~late_rst) ? (5'b00011): instruc[15:11]; // get the op_code from instruc
     wire [1:0]func_code = instruc[1:0]; // get the func_code from instruc -- used for a few instructions
 
     always@(*)begin
