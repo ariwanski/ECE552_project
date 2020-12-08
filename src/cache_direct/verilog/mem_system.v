@@ -25,9 +25,9 @@ module mem_system(/*AUTOARG*/
 
    // specifying FSM IO (that isn't an input or output to mem_system module)
    // state machine inputs
-   reg              hit;
-   reg              dirty;
-   reg              valid;
+   wire             hit;
+   wire             dirty;
+   wire             valid;
 
    // state machine outputs
    reg              enable_cache;
@@ -56,7 +56,8 @@ module mem_system(/*AUTOARG*/
 
    // wires for holding state and nxt_state
    wire       [5:0] state;
-   wire       [5:0] nxt_state;
+   reg        [5:0] nxt_state;
+   wire       [5:0] nxt_state_reg;
 
    // STATE LOCAL PARAMETERS
    localparam IDLE           = 6'h00; // idle state
@@ -102,7 +103,7 @@ module mem_system(/*AUTOARG*/
    localparam OFFSET_W3      = 3'b110;
 
    // create state register
-   register #(6) state(.out(nxt_state), .in(state), .wr_en(1'b1), .clk(clk), .rst(rst));
+   register #(6) state_reg(.out(state), .in(nxt_state), .wr_en(1'b1), .clk(clk), .rst(rst));
 
    /* data_mem = 1, inst_mem = 0 *
     * needed for cache parameter */
@@ -174,7 +175,7 @@ module mem_system(/*AUTOARG*/
             enable_cache = 1'b1;
             nxt_state = (hit & valid) ? (IDLE) : (RD_CHECK);
          end
-         RD_CHECK:begin;
+         RD_CHECK:begin
             comp = 1'b1;
             enable_cache = 1'b1;
             nxt_state = (dirty) ? (RD_EVICT_IW0): (RD_LOAD_IW0);
