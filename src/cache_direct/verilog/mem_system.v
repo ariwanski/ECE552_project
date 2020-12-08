@@ -93,6 +93,13 @@ module mem_system(/*AUTOARG*/
    localparam WR_LOAD_WAIT0  = 6'h1F; // write load wait 0
    localparam WR_LOAD_DONE   = 6'h20; // write load done
    localparam WR_CACHE       = 6'h21; // write cache
+   localparam RD_CACHE       = 6'h22; // read cache
+
+   // OFFSET LOCALPARAMS
+   localparam OFFSET_W0      = 3'b000;
+   localparam OFFSET_W1      = 3'b010;
+   localparam OFFSET_W2      = 3'b100;
+   localparam OFFSET_W3      = 3'b110;
 
    // create state register
    register #(6) state(.out(nxt_state), .in(state), .wr_en(1'b1), .clk(clk), .rst(rst));
@@ -141,120 +148,230 @@ module mem_system(/*AUTOARG*/
       Done = 1'b0;
       Stall = 1'b1;
       CacheHit = 1'b0;
-      DataOut = 16'h0000;
-      tag_in = 5'h00;
-      index = 8'h00;
-      offset = 3'h0;
-      data_in_cache = 16'h0000;
-      valid_in = 1'b0;
+      DataOut = data_out_cache;
+      tag_in = Addr[15:11];
+      index = Addr[10:3];
+      offset = Addr[2:0];
+      data_in_cache = data_out_mem;
+      valid_in = 1'b1;
       comp = 1'b0;
       write_cache = 1'b0;
       addr_mem = 16'h0000;
-      data_in_mem = 16'h0000;
+      data_in_mem = data_out_cache;
       rd_mem = 1'b0;
       wr_mem = 1'b0;
+      enable_cache = 1'b0;
+      nxt_state = 6'h00; // default state is IDLE
       case(state)
          IDLE:begin
-
+            Stall = 1'b0;
+            nxt_state = (Rd) ? (RD_BEGIN) : ((Wr) ? (WR_BEGIN) : (IDLE));
          end
          RD_BEGIN:begin
-
+            Done = hit & valid;
+            CacheHit = hit & valid;
+            comp = 1'b1;
+            enable_cache = 1'b1;
+            nxt_state = (hit & valid) ? (IDLE) : (RD_CHECK);
          end
-         RD_CHECK:begin
-
+         RD_CHECK:begin;
+            comp = 1'b1;
+            enable_cache = 1'b1;
+            nxt_state = (dirty) ? (RD_EVICT_IW0): (RD_LOAD_IW0);
          end
          RD_EVICT_IW0:begin
-
+            tag_in = tag_out;
+            offset = OFFSET_W0;
+            enable_cache = 1'b1;
+            addr_mem = {tag_out, Addr[10:3], OFFSET_W0};
+            wr_mem = 1'b1;
+            nxt_state = RD_EVICT_IW1;
          end
          RD_EVICT_IW1:begin
-
+            tag_in = tag_out;
+            offset = OFFSET_W1;
+            enable_cache = 1'b1;
+            addr_mem = {tag_out, Addr[10:3], OFFSET_W1};
+            wr_mem = 1'b1;
+            nxt_state = RD_EVICT_IW2;
          end
          RD_EVICT_IW2:begin
-
+            tag_in = tag_out;
+            offset = OFFSET_W2;
+            enable_cache = 1'b1;
+            addr_mem = {tag_out, Addr[10:3], OFFSET_W2};
+            wr_mem = 1'b1;
+            nxt_state = RD_EVICT_IW3;
          end
          RD_EVICT_IW3:begin
-
+            tag_in = tag_out;
+            offset = OFFSET_W3;
+            enable_cache = 1'b1;
+            addr_mem = {tag_out, Addr[10:3], OFFSET_W3};
+            wr_mem = 1'b1;
+            nxt_state = RD_EVICT_WAIT0;
          end
          RD_EVICT_WAIT0:begin
-
+            nxt_state = RD_EVICT_WAIT1;
          end
          RD_EVICT_WAIT1:begin
-
+            nxt_state = RD_EVICT_WAIT2;
          end
          RD_EVICT_WAIT2:begin
-
+            nxt_state = RD_EVICT_DONE;
          end
          RD_EVICT_DONE:begin
-
+            nxt_state = RD_LOAD_IW0;
          end
          RD_LOAD_IW0:begin
-
+            addr_mem = {Addr[15:3], OFFSET_W0};
+            rd_mem = 1'b1;
+            nxt_state = RD_LOAD_IW1;
          end
          RD_LOAD_IW1:begin
-
+            addr_mem = {Addr[15:3], OFFSET_W1};
+            rd_mem = 1'b1;
+            nxt_state = RD_LOAD_IW2;   
          end
          RD_LOAD_IW2:begin
-
+            offset = OFFSET_W0;
+            enable_cache = 1'b1;
+            write_cache = 1'b1;
+            addr_mem = {Addr[15:3], OFFSET_W2};
+            rd_mem = 1'b1;
+            nxt_state = RD_LOAD_IW3;
          end
          RD_LOAD_IW3:begin
-
+            offset = OFFSET_W1;
+            enable_cache = 1'b1;
+            write_cache = 1'b1;
+            addr_mem = {Addr[15:3], OFFSET_W3};
+            rd_mem = 1'b1;
+            nxt_state = RD_LOAD_WAIT0;
          end
          RD_LOAD_WAIT0:begin
-
+            offset = OFFSET_W2;
+            enable_cache = 1'b1;
+            write_cache = 1'b1;
+            nxt_state = RD_LOAD_DONE;
          end
          RD_LOAD_DONE:begin
-
+            offset = OFFSET_W3;
+            enable_cache = 1'b1;
+            write_cache = 1'b1;
+            nxt_state = RD_CACHE;
+         end
+         RD_CACHE:begin
+            Done = 1'b1;
+            Stall = 1'b0;
+            comp = 1'b1;
+            enable_cache = 1'b1;
+            nxt_state = IDLE;
          end
          WR_BEGIN:begin
-
+            Done = hit & valid;
+            CacheHit = hit & valid;
+            data_in_cache = DataIn;
+            comp = 1'b1;
+            enable_cache = 1'b1;
+            write_cache= 1'b1;
+            nxt_state = (hit & valid) ? (IDLE) : (WR_CHECK);
          end
          WR_CHECK:begin
-
+            comp = 1'b1;
+            enable_cache = 1'b1;
+            nxt_state = (dirty) ? (WR_EVICT_IW0) : (WR_LOAD_IW0);
          end
          WR_EVICT_IW0:begin
-
+            tag_in = tag_out;
+            offset = OFFSET_W0;
+            enable_cache = 1'b1;
+            addr_mem = {tag_out, Addr[10:3], OFFSET_W0};
+            wr_mem = 1'b1;
+            nxt_state = WR_EVICT_IW1;
          end
          WR_EVICT_IW1:begin
-
+            tag_in = tag_out;
+            offset = OFFSET_W1;
+            enable_cache = 1'b1;
+            addr_mem = {tag_out, Addr[10:3], OFFSET_W1};
+            wr_mem = 1'b1;
+            nxt_state = WR_EVICT_IW2;
          end
          WR_EVICT_IW2:begin
-
+            tag_in = tag_out;
+            offset = OFFSET_W2;
+            enable_cache = 1'b1;
+            addr_mem = {tag_out, Addr[10:3], OFFSET_W2};
+            wr_mem = 1'b1;
+            nxt_state = WR_EVICT_IW3;
          end
          WR_EVICT_IW3:begin
-
+            tag_in = tag_out;
+            offset = OFFSET_W3;
+            enable_cache = 1'b1;
+            addr_mem = {tag_out, Addr[10:3], OFFSET_W3};
+            wr_mem = 1'b1;
+            nxt_state = WR_EVICT_WAIT0;
          end
          WR_EVICT_WAIT0:begin
-
+            nxt_state = WR_EVICT_WAIT1;
          end
          WR_EVICT_WAIT1:begin
-
+            nxt_state = WR_EVICT_WAIT2;
          end
          WR_EVICT_WAIT2:begin
-
+            nxt_state = WR_EVICT_DONE;
          end
          WR_EVICT_DONE:begin
-
+            nxt_state = WR_LOAD_IW0;
          end
          WR_LOAD_IW0:begin
-
+            addr_mem = {Addr[15:3],OFFSET_W0};
+            rd_mem = 1'b1;
+            nxt_state = WR_LOAD_IW1;
          end
          WR_LOAD_IW1:begin
-
+            addr_mem = {Addr[15:3],OFFSET_W1};
+            rd_mem = 1'b1;
+            nxt_state = WR_LOAD_IW2;
          end
          WR_LOAD_IW2:begin
-
+            addr_mem = {Addr[15:3],OFFSET_W2};
+            rd_mem = 1'b1;
+            offset = OFFSET_W0;
+            enable_cache = 1'b1;
+            write_cache = 1'b1;
+            nxt_state = WR_LOAD_IW3;
          end
          WR_LOAD_IW3:begin
-
+            addr_mem = {Addr[15:3],OFFSET_W3};
+            rd_mem = 1'b1;
+            offset = OFFSET_W1;
+            enable_cache = 1'b1;
+            write_cache = 1'b1;
+            nxt_state = WR_LOAD_WAIT0;
          end
          WR_LOAD_WAIT0:begin
-
+            offset = OFFSET_W2;
+            enable_cache = 1'b1;
+            write_cache = 1'b1;
+            nxt_state = WR_LOAD_DONE;
          end
          WR_LOAD_DONE:begin
-
+            offset = OFFSET_W3;
+            enable_cache = 1'b1;
+            write_cache = 1'b1;
+            nxt_state = WR_CACHE;
          end
          default:begin // (WR_CACHE)
-
+            Done = 1'b1;
+            Stall = 1'b0;
+            data_in_cache = DataIn;
+            comp = 1'b1;
+            enable_cache = 1'b1;
+            write_cache = 1'b1;
+            nxt_state = IDLE;
          end
       endcase
    end
