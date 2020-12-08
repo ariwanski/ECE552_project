@@ -9,19 +9,19 @@ module mem_system(/*AUTOARG*/
    Addr, DataIn, Rd, Wr, createdump, clk, rst
    );
    
-   input [15:0] Addr;
-   input [15:0] DataIn;
-   input        Rd;
-   input        Wr;
-   input        createdump;
-   input        clk;
-   input        rst;
+   input      [15:0] Addr;
+   input      [15:0] DataIn;
+   input             Rd;
+   input             Wr;
+   input             createdump;
+   input             clk;
+   input             rst;
    
-   output [15:0] DataOut;
-   output Done;
-   output Stall;
-   output CacheHit;
-   output err;
+   output reg [15:0] DataOut;
+   output reg        Done;
+   output reg        Stall;
+   output reg        CacheHit;
+   output            err;
 
    // specifying FSM IO (that isn't an input or output to mem_system module)
    // state machine inputs
@@ -34,7 +34,7 @@ module mem_system(/*AUTOARG*/
    reg              wr_mem;
    reg              rd_mem;
    reg        [4:0] tag_in;
-   reg        [7:0] index_in;
+   reg        [7:0] index;
    reg        [2:0] offset;
    reg       [15:0] data_in_cache;
    reg       [15:0] data_in_mem;
@@ -113,7 +113,7 @@ module mem_system(/*AUTOARG*/
                           .rst                  (rst),
                           .createdump           (createdump),
                           .tag_in               (tag_in),
-                          .index                (index_in),
+                          .index                (index),
                           .offset               (offset),
                           .data_in              (data_in_cache),
                           .comp                 (comp),
@@ -138,6 +138,21 @@ module mem_system(/*AUTOARG*/
    
    // finite state machine logic
    always @(*)begin
+      Done = 1'b0;
+      Stall = 1'b1;
+      CacheHit = 1'b0;
+      DataOut = 16'h0000;
+      tag_in = 5'h00;
+      index = 8'h00;
+      offset = 3'h0;
+      data_in_cache = 16'h0000;
+      valid_in = 1'b0;
+      comp = 1'b0;
+      write_cache = 1'b0;
+      addr_mem = 16'h0000;
+      data_in_mem = 16'h0000;
+      rd_mem = 1'b0;
+      wr_mem = 1'b0;
       case(state)
          IDLE:begin
 
