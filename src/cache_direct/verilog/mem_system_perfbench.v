@@ -197,7 +197,7 @@ module mem_system_perfbench(/*AUTOARG*/);
          end else begin
             $display("Test status: SUCCESS");
          end
-         $stop;
+         $finish;
       end
    endtask // end_simulation
    

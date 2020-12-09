@@ -51,7 +51,7 @@ module mem_system(/*AUTOARG*/
    // additional mem wires
    wire      [15:0] data_out_mem;
    wire             stall;
-   wire             busy;
+   wire       [3:0] busy;
    wire             mem_err;
 
    // wires for holding state and nxt_state
