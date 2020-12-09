@@ -264,7 +264,7 @@ module mem_system(/*AUTOARG*/
          end
          RD_CACHE:begin
             Done = 1'b1;
-            Stall = 1'b0;
+            //Stall = 1'b0;
             comp = 1'b1;
             enable_cache = 1'b1;
             nxt_state = IDLE;
@@ -367,7 +367,7 @@ module mem_system(/*AUTOARG*/
          end
          default:begin // (WR_CACHE)
             Done = 1'b1;
-            Stall = 1'b0;
+            //Stall = 1'b0;
             data_in_cache = DataIn;
             comp = 1'b1;
             enable_cache = 1'b1;
