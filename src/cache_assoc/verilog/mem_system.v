@@ -25,9 +25,7 @@ module mem_system(/*AUTOARG*/
 
    // specifying FSM IO (that isn't an input or output to mem_system module)
    // state machine inputs
-   wire             hit;
    wire             dirty;
-   wire             valid;
 
    // state machine outputs
    reg              enable_cache;
@@ -42,6 +40,8 @@ module mem_system(/*AUTOARG*/
    reg              comp;
    reg              write_cache;
    reg       [15:0] addr_mem;
+   reg              inv_victim; // when high, inverts the victimway register
+   reg              en_ws; // enable way_sel register
 
    // additional cache wires
    wire       [4:0] tag_out;
@@ -134,7 +134,7 @@ module mem_system(/*AUTOARG*/
    // create state register
    register #(6) state_reg(.out(state), .in(nxt_state), .wr_en(1'b1), .clk(clk), .rst(rst));
    register #(1) victimway_reg(.out(victimway), .in(victimway_in), .wr_en(1'b1), .clk(clk), .rst(rst));
-   register #(1) way_sel_reg(.out(way_sel), .in(way_sel_in), .wr_en(1'b1), .clk(clk), .rst(rst));
+   register #(1) way_sel_reg(.out(way_sel), .in(way_sel_in), .wr_en(en_ws), .clk(clk), .rst(rst));
 
    /* data_mem = 1, inst_mem = 0 *
     * needed for cache parameter */
@@ -160,7 +160,7 @@ module mem_system(/*AUTOARG*/
                           .valid_in             (valid_in));
    cache #(2 + memtype) c1(// Outputs
                           .tag_out              (tag_out_c1),
-                          .data_out             (tag_out_c1),
+                          .data_out             (data_out_c1),
                           .hit                  (hit_c1),
                           .dirty                (dirty_c1),
                           .valid                (valid_c1),
@@ -196,7 +196,27 @@ module mem_system(/*AUTOARG*/
    assign hit_0 = hit_c0 & valid_c0; // hit occured in cache 0
    assign hit_1 = hit_c1 & valid_c1; // hit occured in cache 1
    assign hit_and_valid = hit_0 | hit_1; // hit occured in a cache
-   
+
+   assign enable_c0 = (hit_c0 & enable_cache) ? (1'b1) : (
+                      (~way_sel & enable_cache) ? (1'b1) : (1'b0));
+   assign enable_c1 = (hit_c1 & enable_cache) ? (1'b1) : (
+                      (way_sel & enable_cache) ? (1'b1) : (1'b0));
+
+   assign data_out_cache = (hit_c0) ? (data_out_c0) : (
+                           (hit_c1) ? (data_out_c1) : (
+                           (way_sel) ? (data_out_c1) : (data_out_c0)));
+
+   assign tag_out = (way_sel) ? (tag_out_c1) : (tag_out_c0);
+   assign dirty = (way_sel & dirty_c1) ? (1'b1) : (
+                  (~way_sel & dirty_c0) ? (1'b1) : (1'b0));
+
+   assign victimway_in = (inv_victim) ? (~victimway) : (victimway);
+
+   assign way_sel_in = (valid_c0 & valid_c1) ? (victimway) : ( // both ways are valid
+                       (~valid_c0 & ~valid_c1) ? (1'b0) : ( // neither ways are valid
+                       (~valid_c0) ? (1'b0) : (1'b1))); // place in the invalid way
+
+   assign way_sel_in
    
    // finite state machine logic
    always @(*)begin
@@ -216,6 +236,8 @@ module mem_system(/*AUTOARG*/
       rd_mem = 1'b0;
       wr_mem = 1'b0;
       enable_cache = 1'b0;
+      inv_victim = 1'b0;
+      en_ws = 1'b0;
       nxt_state = 6'h00; // default state is IDLE
       case(state)
          IDLE:begin
@@ -223,11 +245,12 @@ module mem_system(/*AUTOARG*/
             nxt_state = (Rd) ? (RD_BEGIN) : ((Wr) ? (WR_BEGIN) : (IDLE));
          end
          RD_BEGIN:begin
-            Done = hit & valid;
-            CacheHit = hit & valid;
+            Done = hit_and_valid;
+            CacheHit = hit_and_valid;
             comp = 1'b1;
             enable_cache = 1'b1;
-            nxt_state = (hit & valid) ? (IDLE) : (RD_CHECK);
+            en_ws = (hit_and_valid) ? (1'b0) : (1'b1);
+            nxt_state = (hit_and_valid) ? (IDLE) : (RD_CHECK);
          end
          RD_CHECK:begin
             comp = 1'b1;
@@ -322,15 +345,17 @@ module mem_system(/*AUTOARG*/
             comp = 1'b1;
             enable_cache = 1'b1;
             nxt_state = IDLE;
+            inv_victim = 1'b1;
          end
          WR_BEGIN:begin
-            Done = hit & valid;
-            CacheHit = hit & valid;
+            Done = hit_and_valid;
+            CacheHit = hit_and_valid;
             data_in_cache = DataIn;
             comp = 1'b1;
             enable_cache = 1'b1;
             write_cache= 1'b1;
-            nxt_state = (hit & valid) ? (IDLE) : (WR_CHECK);
+            en_ws = (hit_and_valid) ? (1'b0) : (1'b1);
+            nxt_state = (hit_and_valid) ? (IDLE) : (WR_CHECK);
          end
          WR_CHECK:begin
             comp = 1'b1;
@@ -427,6 +452,7 @@ module mem_system(/*AUTOARG*/
             enable_cache = 1'b1;
             write_cache = 1'b1;
             nxt_state = IDLE;
+            inv_victim = 1'b1;
          end
       endcase
    end
