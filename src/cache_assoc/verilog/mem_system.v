@@ -17,10 +17,10 @@ module mem_system(/*AUTOARG*/
    input        clk;
    input        rst;
    
-   output [15:0] DataOut;
-   output Done;
-   output Stall;
-   output CacheHit;
+   output reg [15:0] DataOut;
+   output reg Done;
+   output reg Stall;
+   output reg CacheHit;
    output err;
 
    // specifying FSM IO (that isn't an input or output to mem_system module)
@@ -42,6 +42,7 @@ module mem_system(/*AUTOARG*/
    reg       [15:0] addr_mem;
    reg              inv_victim; // when high, inverts the victimway register
    reg              en_ws; // enable way_sel register
+   reg              force_en_cache; // forces both caches to be enabled
 
    // additional cache wires
    wire       [4:0] tag_out;
@@ -197,10 +198,13 @@ module mem_system(/*AUTOARG*/
    assign hit_1 = hit_c1 & valid_c1; // hit occured in cache 1
    assign hit_and_valid = hit_0 | hit_1; // hit occured in a cache
 
-   assign enable_c0 = (hit_c0 & enable_cache) ? (1'b1) : (
-                      (~way_sel & enable_cache) ? (1'b1) : (1'b0));
-   assign enable_c1 = (hit_c1 & enable_cache) ? (1'b1) : (
-                      (way_sel & enable_cache) ? (1'b1) : (1'b0));
+   assign enable_c0 = (force_en_cache) ? (1'b1) : (
+                      (hit_c0 & enable_cache) ? (1'b1) : (
+                      (~way_sel & enable_cache) ? (1'b1) : (1'b0)));
+
+   assign enable_c1 = (force_en_cache) ? (1'b1) : (
+                      (hit_c1 & enable_cache) ? (1'b1) : (
+                      (way_sel & enable_cache) ? (1'b1) : (1'b0)));
 
    assign data_out_cache = (hit_c0) ? (data_out_c0) : (
                            (hit_c1) ? (data_out_c1) : (
@@ -215,8 +219,6 @@ module mem_system(/*AUTOARG*/
    assign way_sel_in = (valid_c0 & valid_c1) ? (victimway) : ( // both ways are valid
                        (~valid_c0 & ~valid_c1) ? (1'b0) : ( // neither ways are valid
                        (~valid_c0) ? (1'b0) : (1'b1))); // place in the invalid way
-
-   assign way_sel_in
    
    // finite state machine logic
    always @(*)begin
@@ -238,6 +240,7 @@ module mem_system(/*AUTOARG*/
       enable_cache = 1'b0;
       inv_victim = 1'b0;
       en_ws = 1'b0;
+      force_en_cache = 1'b0;
       nxt_state = 6'h00; // default state is IDLE
       case(state)
          IDLE:begin
@@ -249,6 +252,7 @@ module mem_system(/*AUTOARG*/
             CacheHit = hit_and_valid;
             comp = 1'b1;
             enable_cache = 1'b1;
+            force_en_cache = 1'b1;
             en_ws = (hit_and_valid) ? (1'b0) : (1'b1);
             nxt_state = (hit_and_valid) ? (IDLE) : (RD_CHECK);
          end
@@ -353,6 +357,7 @@ module mem_system(/*AUTOARG*/
             data_in_cache = DataIn;
             comp = 1'b1;
             enable_cache = 1'b1;
+            force_en_cache = 1'b1;
             write_cache= 1'b1;
             en_ws = (hit_and_valid) ? (1'b0) : (1'b1);
             nxt_state = (hit_and_valid) ? (IDLE) : (WR_CHECK);
